@@ -1,0 +1,36 @@
+module "eks_auth" {
+  source = "terraform-aws-modules/eks/aws//modules/aws-auth"
+  version = "20.8.5"
+
+  depends_on = [module.eks]
+
+  manage_aws_auth = true
+
+  aws_auth_users = [
+    {
+      userarn  = "arn:aws:iam::${var.aws_account_id}:user/${var.eks_admin_user}"
+      username = var.eks_admin_user
+      groups   = ["system:masters"]
+    }
+  ]
+}
+
+
+
+
+
+variable "eks_admin_user" {
+  description = "IAM user who will be granted admin access to the cluster"
+  type        = string
+  default     = "your-iam-username"  # replace with your IAM user name
+}
+
+variable "aws_account_id" {
+  description = "AWS account ID"
+  type        = string
+}
+
+
+
+eks_admin_user  = "your-iam-username"       # Replace this with your IAM username
+aws_account_id  = "123456789012"            # Replace with your AWS Account ID
