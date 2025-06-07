@@ -58,19 +58,15 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
 
-  container_definitions = jsonencode([
-    {
-      name      = "simpletime-container"
-      image     = var.container_image
-      essential = true
-      portMappings = [
-        {
-          containerPort = 80
-          protocol      = "tcp"
-        }
-      ]
-    }
-  ])
+  container_definitions = jsonencode([{
+    name      = "simpletime-container"
+    image     = var.container_image
+    essential = true
+    portMappings = [{
+      containerPort = 5000
+      protocol      = "tcp"
+    }]
+  }])
 }
 
 resource "aws_security_group" "alb_sg" {
@@ -99,8 +95,8 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port       = 80
-    to_port         = 80
+    from_port       = 5000
+    to_port         = 5000
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
@@ -122,7 +118,7 @@ resource "aws_lb" "this" {
 
 resource "aws_lb_target_group" "this" {
   name        = "simpletime-tg"
-  port        = 80
+  port        = 5000
   protocol    = "HTTP"
   vpc_id      = module.vpc.vpc_id
   target_type = "ip"
@@ -164,7 +160,7 @@ resource "aws_ecs_service" "this" {
   load_balancer {
     target_group_arn = aws_lb_target_group.this.arn
     container_name   = "simpletime-container"
-    container_port   = 80
+    container_port   = 5000
   }
 
   depends_on = [aws_lb_listener.this]
